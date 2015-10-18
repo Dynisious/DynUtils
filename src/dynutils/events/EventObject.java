@@ -14,8 +14,8 @@ import java.util.EventListener;
  * @version 0.0.1
  * @param <Listener> The type of EventListers stored inside this EventObject.
  */
-public abstract class EventObject<Listener extends EventListener> {
-    private ArrayList<Listener> listeners; //The EventListeners which handle
+public class EventObject<Listener extends EventListener> {
+    private transient ArrayList<Listener> listeners; //The EventListeners which handle
     //events on this EventObject.
     /**
      * <p>
@@ -92,7 +92,7 @@ public abstract class EventObject<Listener extends EventListener> {
         }
     }
     /**
-     ** @return An array containing all EventListener on this EventObject.
+     * @return An array containing all EventListener on this EventObject.
      */
     public EventListener[] getListeners() {
         if (listeners != null) {
@@ -109,10 +109,10 @@ public abstract class EventObject<Listener extends EventListener> {
      *
      * @param listeners The EventListeners to initially begin with.
      */
-    protected EventObject(final Collection<Listener> listeners) {
+    public EventObject(final Collection<Listener> listeners) {
         this.listeners = new ArrayList<>(listeners);
     }
-    protected EventObject() {
+    public EventObject() {
     }
 
 }
