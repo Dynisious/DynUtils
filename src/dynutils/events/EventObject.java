@@ -1,8 +1,10 @@
 package dynutils.events;
 
-import java.util.ArrayList;
+import dynutils.collections.sets.LinkedSet;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EventListener;
+import java.util.Objects;
 /**
  * <p>
  * EventObjects are any objects which fire events. Facilitates the adding and
@@ -15,18 +17,11 @@ import java.util.EventListener;
  * @param <Listener> The type of EventListers stored inside this EventObject.
  */
 public class EventObject<Listener extends EventListener> {
-    private transient ArrayList<Listener> listeners; //The EventListeners which handle
-    //events on this EventObject.
     /**
      * <p>
-     * Checks whether listeners has been initialised and initialises it if it
-     * has been.</p>
+     * The EventListeners which handle events on this EventObject.</p>
      */
-    private synchronized void checkListeners() {
-        if (listeners == null) {
-            listeners = new ArrayList<>(0);
-        }
-    }
+    private transient LinkedSet<Listener> listeners = new LinkedSet<>(false);
     /**
      * <p>
      * Adds the passed EventListener to the collection of EventListeners on this
@@ -36,11 +31,8 @@ public class EventObject<Listener extends EventListener> {
      */
     public void addListener(final Listener l) {
         if (l != null) {
-            checkListeners();
             synchronized (listeners) {
-                if (!listeners.contains(l)) {
-                    listeners.add(l);
-                }
+                listeners.add(l);
             }
         }
     }
@@ -52,13 +44,10 @@ public class EventObject<Listener extends EventListener> {
      * @param ls The collection of EventListeners to add.
      */
     public void addAllListeners(final Collection<Listener> ls) {
-        checkListeners();
         for (final Listener l : ls) {
             synchronized (listeners) {
                 if (l != null) {
-                    if (!listeners.contains(l)) {
-                        listeners.addAll(ls);
-                    }
+                    listeners.addAll(ls);
                 }
             }
         }
@@ -78,29 +67,12 @@ public class EventObject<Listener extends EventListener> {
         }
     }
     /**
-     * <p>
-     * Removes the EventListener at the specified index.</p>
-     *
-     * @param index The index of the EventListener to remove.
-     *
-     * @return The EventListener to remove.
-     */
-    public Listener removeListener(final int index) {
-        checkListeners();
-        synchronized (listeners) {
-            return listeners.remove(index);
-        }
-    }
-    /**
      * @return An array containing all EventListener on this EventObject.
      */
     public EventListener[] getListeners() {
-        if (listeners != null) {
-            synchronized (listeners) {
-                return listeners.toArray(new EventListener[listeners.size()]);
-            }
+        synchronized (listeners) {
+            return listeners.toArray(new EventListener[listeners.size()]);
         }
-        return new EventListener[0];
     }
 
     /**
@@ -110,9 +82,28 @@ public class EventObject<Listener extends EventListener> {
      * @param listeners The EventListeners to initially begin with.
      */
     public EventObject(final Collection<Listener> listeners) {
-        this.listeners = new ArrayList<>(listeners);
+        listeners.addAll(listeners);
     }
     public EventObject() {
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this)
+            return true;
+        if (obj instanceof EventObject) {
+            final EventObject temp = (EventObject) obj;
+            if (Arrays.equals(temp.getListeners(), getListeners()))
+                return true;
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = super.hashCode();
+        hash = 47 * hash + Objects.hashCode(this.listeners);
+        return hash;
     }
 
 }
